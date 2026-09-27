@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>devices</title>
+<style>
+  :root{
+    --bg:#0F1720; --card:#16202B; --line:#25333F;
+    --text:#E6EDF3; --muted:#8AA0B2;
+    --accent:#5FD9C4; --selected:#1E4B44; --danger:#E5896A;
+  }
+  @media (prefers-color-scheme: light){
+    :root{
+      --bg:#F4F7F9; --card:#FFFFFF; --line:#DCE4E9;
+      --text:#16202B; --muted:#5C6E7A;
+      --accent:#0E9E86; --selected:#DFF6F0; --danger:#C4573C;
+    }
+  }
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    margin:0; background:var(--bg); color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+  }
+  .wrap{max-width:560px; margin:0 auto; padding:48px 20px 64px;}
+  h1{
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    font-size:15px; letter-spacing:0.14em; font-weight:600;
+    color:var(--muted); margin:0 0 6px;
+  }
+  .sub{color:var(--muted); font-size:14px; margin:0 0 8px; line-height:1.5;}
+  .warn{
+    font-size:13px; color:var(--danger); background:var(--card);
+    border:1px solid var(--line); border-radius:8px; padding:10px 14px;
+    margin:16px 0 28px; line-height:1.5;
+  }
+  .card{
+    background:var(--card); border:1px solid var(--line); border-radius:10px;
+    padding:20px; margin-bottom:20px;
+  }
+  label{font-size:12px; color:var(--muted); letter-spacing:0.06em; display:block; margin-bottom:8px;}
+  .name-input{
+    width:100%; background:transparent; border:none; border-bottom:1px solid var(--line);
+    color:var(--text); font-size:16px; padding:8px 2px; outline:none;
+    font-family:inherit; margin-bottom:22px;
+  }
+  .name-input:focus{border-bottom-color:var(--accent);}
+  .name-input::placeholder{color:var(--muted);}
+  .chips{display:flex; flex-wrap:wrap; gap:8px;}
+  .chip{
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    font-size:13px; padding:8px 13px; border-radius:7px;
+    background:transparent; border:1px solid var(--line); color:var(--text);
+    cursor:pointer; transition:border-color .15s, color .15s, background .15s;
+  }
+  .chip:hover{border-color:var(--accent);}
+  .chip.selected{background:var(--selected); border-color:var(--accent); color:var(--accent);}
+  .btn{
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    font-size:14px; padding:11px 16px; border-radius:7px;
+    background:var(--accent); border:none; color:#0F1720; font-weight:600;
+    cursor:pointer; width:100%; margin-top:22px;
+  }
+  .btn:disabled{opacity:0.4; cursor:default;}
+  .note{font-size:13px; color:var(--muted); margin-top:12px; min-height:16px; text-align:center;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>DEVICES</h1>
+  <p class="sub">Enter your name, pick a device, then copy your selection and send it to the organizer.</p>
+  <div class="warn">This page doesn't sync between people. Two people could copy the same device by mistake — check with the organizer before finalizing.</div>
+
+  <div class="card">
+    <label>Name</label>
+    <input class="name-input" id="name" placeholder="Your name">
+    <label>Device</label>
+    <div class="chips" id="chips"></div>
+    <button class="btn" id="copy-btn" disabled>Copy my selection</button>
+    <div class="note" id="note"></div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var devices = ["XRD","XRF","Spectrophotometer","Mass Spectrometer","GC","HPLC","FTIR","DTA/TGA","SEM/TEM","Spectrometer","FTIR (2)","Mass Spectrometer (2)","XRD (2)"];
+  var selected = null;
+  var chipsEl = document.getElementById('chips');
+  var nameEl = document.getElementById('name');
+  var copyBtn = document.getElementById('copy-btn');
+  var noteEl = document.getElementById('note');
+
+  devices.forEach(function(d){
+    var b = document.createElement('button');
+    b.className = 'chip';
+    b.textContent = d;
+    b.addEventListener('click', function(){
+      selected = d;
+      Array.from(chipsEl.children).forEach(function(c){ c.classList.remove('selected'); });
+      b.classList.add('selected');
+      updateButton();
+    });
+    chipsEl.appendChild(b);
+  });
+
+  function updateButton(){
+    copyBtn.disabled = !(selected && nameEl.value.trim());
+  }
+  nameEl.addEventListener('input', updateButton);
+
+  copyBtn.addEventListener('click', async function(){
+    var text = nameEl.value.trim() + ' - ' + selected;
+    try{
+      await navigator.clipboard.writeText(text);
+      noteEl.textContent = 'Copied: "' + text + '" — now paste and send it to the organizer.';
+    }catch(err){
+      noteEl.textContent = 'Could not copy automatically. Your selection: ' + text;
+    }
+  });
+})();
+</script>
+</body>
+</html>
